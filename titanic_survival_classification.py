@@ -30,79 +30,84 @@ from sklearn.externals.joblib import dump
 # Importing the dataset
 dataset = pd.read_csv('train.csv')
 
-# Dropping unnecessary columns
-dataset = dataset.drop(['PassengerId', 'Ticket', 'Cabin'], axis = 1)
+def preprocess_data(dataset):
 
-# Picking out title from name column
-
-dataset['Name'] = [name.split(',')[1].strip().split('.')[0] for name in dataset['Name']]
-
-# Check for nan(anananananananananana Batman!)
-
-dataset.isna().any() # cols with nan(ana Batman!): ['Age', 'Embarked']
-
-dataset['Age'] = dataset['Age'].fillna(int(dataset['Age'].dropna().median()))
-
-dataset['Embarked'].describe() # top: S
-dataset['Embarked'] = dataset['Embarked'].fillna('S')
-
-# dataset.isna().any() # We are good!
-
-# Encoding the dataset
-
-title_label_encoder = LabelEncoder()
-dataset['Name'] = title_label_encoder.fit_transform(dataset['Name'])
-print(title_label_encoder.classes_)
-
-sex_label_encoder = LabelEncoder()
-dataset['Sex'] = sex_label_encoder.fit_transform(dataset['Sex'])
-print(sex_label_encoder.classes_)
-
-embarked_label_encoder = LabelEncoder()
-dataset['Embarked'] = embarked_label_encoder.fit_transform(dataset['Embarked'])
-print(embarked_label_encoder.classes_)
-
-one_hot_encoder = OneHotEncoder()
-
-dataset_ohe = dataset.iloc[:,[1, 2, 5, 6, 8]].values
-one_hot_encoder.fit(dataset_ohe)
-one_hot_encoder.categories_
-dataset_ohe = one_hot_encoder.transform(dataset_ohe).toarray()
-
-col_to_drop = [0]
-for i in range(len(one_hot_encoder.categories_)-1):
-    col_to_drop.append(col_to_drop[i] + len(one_hot_encoder.categories_[i]))
+    # Dropping unnecessary columns
+    dataset = dataset.drop(['PassengerId', 'Ticket', 'Cabin'], axis = 1)
     
-dataset_ohe = np.delete(dataset_ohe, col_to_drop, axis=1)
-
-dataset = dataset.drop(['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], axis=1)
-dataset = dataset.join(pd.DataFrame(dataset_ohe))
-
-# dataset = pd.get_dummies(dataset, columns = ['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], drop_first = True)
-
-# Scaling the dataset
-
-age_scaler = StandardScaler()
-dataset['Age'] = age_scaler.fit_transform(dataset['Age'].values.reshape(-1,1))
-
-fare_scaler = StandardScaler()
-dataset['Fare'] = fare_scaler.fit_transform(dataset['Fare'].values.reshape(-1,1))
-
-# Split the dataset
-
-X, Y = dataset.iloc[:,1:].values, dataset.iloc[:,0].values
-X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.15, random_state = 0)
-
-# Save data processing fitted scalers and encoders
-
-# np.save('fitted_data_processors/title_label_encoder.npy',title_label_encoder.classes_)
-# np.save('fitted_data_processors/sex_label_encoder.npy',sex_label_encoder.classes_)
-# np.save('fitted_data_processors/embarked_label_encoder.npy',embarked_label_encoder.classes_)
-
-# np.save('fitted_data_processors/one_hot_encoder.npy',one_hot_encoder.categories_)
-
-# dump(age_scaler, 'fitted_data_processors/age_scaler.bin', compress=True)
-# dump(fare_scaler, 'fitted_data_processors/fare_scaler.bin', compress=True)
+    # Picking out title from name column
+    
+    dataset['Name'] = [name.split(',')[1].strip().split('.')[0] for name in dataset['Name']]
+    
+    # Check for nan(anananananananananana Batman!)
+    
+    dataset.isna().any() # cols with nan(ana Batman!): ['Age', 'Embarked']
+    
+    dataset['Age'] = dataset['Age'].fillna(int(dataset['Age'].dropna().median()))
+    
+    dataset['Embarked'].describe() # top: S
+    dataset['Embarked'] = dataset['Embarked'].fillna('S')
+    
+    # dataset.isna().any() # We are good!
+    
+    # Encoding the dataset
+    
+    title_label_encoder = LabelEncoder()
+    dataset['Name'] = title_label_encoder.fit_transform(dataset['Name'])
+    # print(title_label_encoder.classes_)
+    
+    sex_label_encoder = LabelEncoder()
+    dataset['Sex'] = sex_label_encoder.fit_transform(dataset['Sex'])
+    # print(sex_label_encoder.classes_)
+    
+    embarked_label_encoder = LabelEncoder()
+    dataset['Embarked'] = embarked_label_encoder.fit_transform(dataset['Embarked'])
+    # print(embarked_label_encoder.classes_)
+    
+    one_hot_encoder = OneHotEncoder()
+    
+    dataset_ohe = dataset.iloc[:,[1, 2, 5, 6, 8]].values
+    one_hot_encoder.fit(dataset_ohe)
+    one_hot_encoder.categories_
+    dataset_ohe = one_hot_encoder.transform(dataset_ohe).toarray()
+    
+    col_to_drop = [0]
+    for i in range(len(one_hot_encoder.categories_)-1):
+        col_to_drop.append(col_to_drop[i] + len(one_hot_encoder.categories_[i]))
+        
+    dataset_ohe = np.delete(dataset_ohe, col_to_drop, axis=1)
+    
+    dataset = dataset.drop(['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], axis=1)
+    dataset = dataset.join(pd.DataFrame(dataset_ohe))
+    
+    # dataset = pd.get_dummies(dataset, columns = ['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], drop_first = True)
+    
+    # Scaling the dataset
+    
+    age_scaler = StandardScaler()
+    dataset['Age'] = age_scaler.fit_transform(dataset['Age'].values.reshape(-1,1))
+    
+    fare_scaler = StandardScaler()
+    dataset['Fare'] = fare_scaler.fit_transform(dataset['Fare'].values.reshape(-1,1))
+    
+    # Split the dataset
+    
+    X, Y = dataset.iloc[:,1:].values, dataset.iloc[:,0].values
+    X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.15, random_state = 0)
+    
+    # Save data processing fitted scalers and encoders
+    
+    # np.save('fitted_data_processors/title_label_encoder.npy',title_label_encoder.classes_)
+    # np.save('fitted_data_processors/sex_label_encoder.npy',sex_label_encoder.classes_)
+    # np.save('fitted_data_processors/embarked_label_encoder.npy',embarked_label_encoder.classes_)
+    
+    # np.save('fitted_data_processors/one_hot_encoder.npy',one_hot_encoder.categories_)
+    
+    # dump(age_scaler, 'fitted_data_processors/age_scaler.bin', compress=True)
+    # dump(fare_scaler, 'fitted_data_processors/fare_scaler.bin', compress=True)
+    return dataset
+    
+dataset = preprocess_data(dataset)
 
 #%%###############
 # Building model #
