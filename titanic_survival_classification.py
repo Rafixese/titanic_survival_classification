@@ -90,11 +90,6 @@ def preprocess_data(dataset):
     fare_scaler = StandardScaler()
     dataset['Fare'] = fare_scaler.fit_transform(dataset['Fare'].values.reshape(-1,1))
     
-    # Split the dataset
-    
-    X, Y = dataset.iloc[:,1:].values, dataset.iloc[:,0].values
-    X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.15, random_state = 0)
-    
     # Save data processing fitted scalers and encoders
     
     # np.save('fitted_data_processors/title_label_encoder.npy',title_label_encoder.classes_)
@@ -106,8 +101,12 @@ def preprocess_data(dataset):
     # dump(age_scaler, 'fitted_data_processors/age_scaler.bin', compress=True)
     # dump(fare_scaler, 'fitted_data_processors/fare_scaler.bin', compress=True)
     return dataset
-    
+
 dataset = preprocess_data(dataset)
+
+# Split the dataset
+X, Y = dataset.iloc[:,1:].values, dataset.iloc[:,0].values
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y, test_size = 0.15, random_state = 0)
 
 #%%###############
 # Building model #
