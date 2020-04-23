@@ -149,5 +149,7 @@ test_dataset = preprocess_data(test_dataset)
 
 test_preds = predict(test_dataset.values)
 
+test_preds = np.array(test_preds, dtype=int)
+
 submit = pd.DataFrame({'PassengerId': ids, 'Survived': test_preds})
 submit.to_csv('submit.csv', index=False)
