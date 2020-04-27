@@ -26,6 +26,8 @@ from sklearn.externals.joblib import load
  
 from sklearn.metrics import confusion_matrix
 
+from preprocessing import preprocess_data
+
 #%%###################
 # Data Preprocessing #
 ######################
@@ -36,70 +38,6 @@ dataset = pd.read_csv('train.csv')
 # Split the dataset
 Y = dataset.iloc[:,1].values
 dataset = dataset.drop('Survived', axis=1)
-
-def preprocess_data(dataset):
-
-    # Dropping unnecessary columns
-    dataset = dataset.drop(['PassengerId', 'Ticket', 'Cabin'], axis = 1)
-    
-    # Picking out title from name column
-    
-    dataset['Name'] = [name.split(',')[1].strip().split('.')[0] for name in dataset['Name']]
-    
-    # Check for nan(anananananananananana Batman!)
-    
-    dataset.isna().any() # cols with nan(ana Batman!): ['Age', 'Embarked']
-    
-    dataset['Age'] = dataset['Age'].fillna(int(dataset['Age'].dropna().median()))
-    
-    dataset['Embarked'].describe() # top: S
-    dataset['Embarked'] = dataset['Embarked'].fillna('S')
-    
-    # dataset.isna().any() # We are good!
-    
-    # Encoding the dataset
-    title_label_encoder = LabelEncoder()
-    title_label_encoder.classes_ = np.load('fitted_data_processors/title_label_encoder.npy', allow_pickle = True)
-    
-    for i in range(len(dataset['Name'])):
-        if dataset['Name'][i] not in title_label_encoder.classes_: dataset['Name'][i] = 'Mr'
-    
-    dataset['Name'] = title_label_encoder.transform(dataset['Name'])
-    # print(title_label_encoder.classes_)
-    sex_label_encoder = LabelEncoder()
-    sex_label_encoder.classes_ = np.load('fitted_data_processors/sex_label_encoder.npy', allow_pickle = True)
-    dataset['Sex'] = sex_label_encoder.transform(dataset['Sex'])
-    # print(sex_label_encoder.classes_)
-    embarked_label_encoder = LabelEncoder()
-    embarked_label_encoder.classes_ = np.load('fitted_data_processors/embarked_label_encoder.npy', allow_pickle = True)
-    dataset['Embarked'] = embarked_label_encoder.transform(dataset['Embarked'])
-    # print(embarked_label_encoder.classes_)
-    one_hot_encoder = OneHotEncoder( handle_unknown = "ignore" )
-    one_hot_encoder.categories_ = np.load('fitted_data_processors/one_hot_encoder.npy', allow_pickle = True)
-    
-    dataset_ohe = dataset.iloc[:,[0, 1, 4, 5, 7]].values
-    dataset_ohe = one_hot_encoder.transform(dataset_ohe).toarray()
-    
-    col_to_drop = [0]
-    for i in range(len(one_hot_encoder.categories_)-1):
-        col_to_drop.append(col_to_drop[i] + len(one_hot_encoder.categories_[i]))
-        
-    dataset_ohe = np.delete(dataset_ohe, col_to_drop, axis=1)
-    
-    dataset = dataset.drop(['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], axis=1)
-    dataset = dataset.join(pd.DataFrame(dataset_ohe))
-    
-    # dataset = pd.get_dummies(dataset, columns = ['Pclass', 'Name', 'SibSp', 'Parch', 'Embarked'], drop_first = True)
-    
-    # Scaling the dataset
-    
-    age_scaler = load('fitted_data_processors/age_scaler.bin')
-    dataset['Age'] = age_scaler.fit_transform(dataset['Age'].values.reshape(-1,1))
-    
-    fare_scaler = load('fitted_data_processors/fare_scaler.bin')
-    dataset['Fare'] = fare_scaler.fit_transform(dataset['Fare'].values.reshape(-1,1))
-    
-    return dataset
 
 dataset = np.array(preprocess_data(dataset))
 
